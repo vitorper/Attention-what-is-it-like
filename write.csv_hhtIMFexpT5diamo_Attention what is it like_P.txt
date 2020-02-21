@@ -1,0 +1,16 @@
+
+write.csv(hhtpostEEMDexp1T5diamo$amplitude[,],"hhtpostEEMDexp1T5diamoamplitude.csv")
+
+write.csv(hhtpostEEMDexp2T5diamo$amplitude[,],"hhtpostEEMDexp2T5diamoamplitude.csv")
+
+
+
+write.csv(hhtpostEEMDexp1T5diamo$instantfreq[,],"hhtpostEEMDexp1T5diamoinstantfreq.csv")
+
+write.csv(hhtpostEEMDexp2T5diamo$instantfreq[,],"hhtpostEEMDexp2T5diamoinstantfreq.csv")
+
+
+write.csv(hhtpostEEMDexp1T5diamo$energy,"hhtpostEEMDexp1T5diamoenergy.csv")
+
+
+write.csv(hhtpostEEMDexp2T5diamo$energy,"hhtpostEEMDexp2T5diamoenergy.csv")

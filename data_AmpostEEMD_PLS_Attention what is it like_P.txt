@@ -1,0 +1,24 @@
+pls_AmpostEEMDOz<- spss.get("F:/Geral/VITOR PEREIRA/PLS/colli_AmpostEEMDOz.sav", lowernames=FALSE, datevars = NULL,
+use.value.labels = TRUE, to.data.frame = TRUE,
+max.value.labels = Inf, force.single=TRUE,
+allow=NULL, charfactor=FALSE)
+
+
+
+pls_AmpostEEMDT5<- spss.get("F:/Geral/VITOR PEREIRA/PLS/colli_AmpostEEMDT5.sav", lowernames=FALSE, datevars = NULL,
+use.value.labels = TRUE, to.data.frame = TRUE,
+max.value.labels = Inf, force.single=TRUE,
+allow=NULL, charfactor=FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+

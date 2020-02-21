@@ -1,0 +1,17 @@
+Del Re, A. C. (2013). Compute Effect Sizes. R package ‘compute.es’. R package version 0.2-2.
+
+
+library("compute.es")
+
+
+postIMF 3 combined Diamond Pseudo Oz instantaneous amplitude
+mes(250.07726400000004,141.84749921304348,221.23649381824532,116.99762855770675,230,230)
+
+postIMF 2 combined Diamond Pseudo T5 instantaneous amplitude 
+mes(231.50092008702,148.87988807983,193.047258710684,116.233060388419,230,230)
+
+postIMF 1 Mask Oz instantaneous frequency 
+mes(0.2922027197375933,0.22709554991124395,0.1440134078351405,0.1506975501712608,230,230)
+
+postIMF 5 Mask T5 instantaneous frequency
+mes(0.017258188931635346, 0.012934933405625387, 0.005633557981819243, 0.004605120575712734,230,230)

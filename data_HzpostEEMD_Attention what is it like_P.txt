@@ -1,0 +1,14 @@
+HzpostEEMDOz<- spss.get("G:/Geral/VITOR PEREIRA/hhtpostEEMD/HzpostEEMDOz.sav", lowernames=FALSE, datevars = NULL,
+use.value.labels = TRUE, to.data.frame = TRUE,
+max.value.labels = Inf, force.single=TRUE,
+allow=NULL, charfactor=FALSE)
+
+
+HzpostEEMDT5<- spss.get("G:/Geral/VITOR PEREIRA/hhtpostEEMD/HzpostEEMDT5.sav", lowernames=FALSE, datevars = NULL,
+use.value.labels = TRUE, to.data.frame = TRUE,
+max.value.labels = Inf, force.single=TRUE,
+allow=NULL, charfactor=FALSE)
+
+
+
+

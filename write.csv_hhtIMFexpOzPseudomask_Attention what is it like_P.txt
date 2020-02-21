@@ -1,0 +1,17 @@
+
+
+write.csv(hhtpostEEMDexp1OzPseudomask$amplitude[,],"hhtpostEEMDexp1OzPseudomaskamplitude.csv")
+
+write.csv(hhtpostEEMDexp2OzPseudomask$amplitude[,],"hhtpostEEMDexp2OzPseudomaskamplitude.csv")
+
+
+write.csv(hhtpostEEMDexp1OzPseudomask$instantfreq[,],"hhtpostEEMDexp1OzPseudomaskinstantfreq.csv")
+
+write.csv(hhtpostEEMDexp2OzPseudomask$instantfreq[,],"hhtpostEEMDexp2OzPseudomaskinstantfreq.csv")
+
+
+
+write.csv(hhtpostEEMDexp1OzPseudomask$energy,"hhtpostEEMDexp1OzPseudomaskenergy.csv")
+
+
+write.csv(hhtpostEEMDexp2OzPseudomask$energy,"hhtpostEEMDexp2OzPseudomaskenergy.csv")

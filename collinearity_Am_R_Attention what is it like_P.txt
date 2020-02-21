@@ -1,0 +1,21 @@
+source.with.encoding('D:/vif_func.txt', encoding='UTF-8')
+
+if D:/ is the location of the source file vif_func.txt
+
+
+vif_func(AmpostEEMDOz)
+vifAmpostEEMDOz
+
+
+
+vif_func(AmpostEEMDT5)
+vifAmpostEEMDT5
+
+
+vif_func(HzpostEEMDOz)
+vifHzpostEEMDOz
+
+
+
+vif_func(HzpostEEMDT5)
+vifHzpostEEMDT5

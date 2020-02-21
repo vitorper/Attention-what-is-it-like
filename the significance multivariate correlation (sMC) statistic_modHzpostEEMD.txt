@@ -1,0 +1,26 @@
+library("mvdalab")
+
+modHzpostEEMDOz <- plsFit(Exper~., scale = TRUE, data = pls_HzpostEEMDOz, 
+               ncomp = 23, validation = "oob", boots = 1000)
+
+smc((modHzpostEEMDOz),corrected = T)
+corrected=T 
+whether there should be a correction of 1st order auto-correlation in the residuals
+
+plot(smc((modHzpostEEMDOz),corrected = T))
+
+
+
+
+modHzpostEEMDT5 <- plsFit(Exper~., scale = TRUE, data = pls_HzpostEEMDT5, 
+               ncomp = 19, validation = "oob", boots = 1000)
+
+smc((modHzpostEEMDT5),corrected = T)
+corrected=T 
+whether there should be a correction of 1st order auto-correlation in the residuals
+
+plot(smc((modHzpostEEMDT5),corrected = T))
+
+
+
+

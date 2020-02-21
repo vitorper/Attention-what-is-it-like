@@ -1,0 +1,28 @@
+library("pls")
+
+set.seed(59)
+plsFitHzpostEEMDOz<-plsr(Exper~.,data=pls_HzpostEEMDOz,validation="CV")
+summary(plsFitHzpostEEMDOz)
+predictionsHzpostEEMDOz <- predict(plsFitHzpostEEMDOz, PLSR_Test_Derivação_Oz, ncomp=40)
+validationplot(plsFitHzpostEEMDOz, val.type="RMSEP")
+pls.RMSEPHzpostEEMDOz<-RMSEP(plsFitHzpostEEMDOz, estimate="CV")
+plot(pls.RMSEPHzpostEEMDOz, main="RMSEP PLS Exper", xlab="components")
+minRMSEP<-which.min(pls.RMSEPHzpostEEMDOz$val)
+points(minRMSEP,min(pls.RMSEPHzpostEEMDOz$val), pch=1, col="red", cex=1.5)
+
+
+
+set.seed(59)
+plsFitHzpostEEMDT5<-plsr(Exper~.,data=pls_HzpostEEMDT5,validation="CV")
+summary(plsFitHzpostEEMDT5)
+predictionsHzpostEEMDT5 <- predict(plsFitHzpostEEMDT5, PLSR_Test_Derivação_T5, ncomp=43)
+validationplot(plsFitHzpostEEMDT5, val.type="RMSEP")
+pls.RMSEPHzpostEEMDT5<-RMSEP(plsFitHzpostEEMDT5, estimate="CV")
+plot(pls.RMSEPHzpostEEMDT5, main="RMSEP PLS Exper", xlab="components")
+minRMSEP<-which.min(pls.RMSEPHzpostEEMDT5$val)
+points(minRMSEP,min(pls.RMSEPHzpostEEMDT5$val), pch=1, col="red", cex=1.5)
+
+
+
+
+

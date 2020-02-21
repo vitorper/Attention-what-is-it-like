@@ -1,0 +1,17 @@
+
+
+write.csv(hhtpostEEMDexp1Ozsqua$amplitude[,],"hhtpostEEMDexp1Ozsquaamplitude.csv")
+
+write.csv(hhtpostEEMDexp2Ozsqua$amplitude[,],"hhtpostEEMDexp2Ozsquaamplitude.csv")
+
+
+write.csv(hhtpostEEMDexp1Ozsqua$instantfreq[,],"hhtpostEEMDexp1Ozsquainstantfreq.csv")
+
+write.csv(hhtpostEEMDexp2Ozsqua$instantfreq[,],"hhtpostEEMDexp2Ozsquainstantfreq.csv")
+
+
+
+write.csv(hhtpostEEMDexp1Ozsqua$energy,"hhtpostEEMDexp1Ozsquaenergy.csv")
+
+
+write.csv(hhtpostEEMDexp2Ozsqua$energy,"hhtpostEEMDexp2Ozsquaenergy.csv")

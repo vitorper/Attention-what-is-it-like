@@ -1,0 +1,49 @@
+
+
+source.with.encoding('D:/HHT-R-code-XIE-Dec2012.txt', encoding='UTF-8')
+
+if D:/ is the location of the source file HHT-R-code-XIE-Dec2012.txt
+
+
+
+postexper1Ozsquaemdtryimfwave <- postEEMD(c(exper1Ozsqua[,"OzSquare"]), c(exper1Ozsqua[,"msec"]))
+
+postexper2Ozsquaemdtryimfwave <- postEEMD(c(exper2Ozsqua[,"OzSquare"]), c(exper2Ozsqua[,"msec"]))
+
+postexper1Ozdiamoemdtryimfwave <- postEEMD(c(exper1OZdiamo[,"OzDiamond"]), c(exper1OZdiamo[,"msec"]))
+
+postexper2Ozdiamoemdtryimfwave <- postEEMD(c(exper2OZdiamo[,"OzDiamond"]), c(exper2OZdiamo[,"msec"]))
+
+postexper1OzMaskemdtryimfwave <- postEEMD(c(exper1OzMask[,"OzMask"]), c(exper1OzMask[,"msec"]))
+
+postexper2OzMaskemdtryimfwave <- postEEMD(c(exper2OzMask[,"OzMask"]), c(exper2OzMask[,"msec"]))
+
+postexper1OzPseudomaskemdtryimfwave <- postEEMD(c(exper1OzPseudomask[,"OzPseudomask"]), c(exper1OzPseudomask[,"msec"]))
+
+postexper2OzPseudomaskemdtryimfwave <- postEEMD(c(exper2OzPseudomask[,"OzPseudomask"]), c(exper2OzPseudomask[,"msec"]))
+
+postcombinexp1OzSquareMaskEEMD <- postEEMD(c(combinexp1Oz[,"OzSquareMask"]), c(combinexp1Oz[,"msec"]))
+
+postcombinexp2OzSquareMaskEEMD <- postEEMD(c(combinexp2Oz[,"OzSquareMask"]), c(combinexp2Oz[,"msec"]))
+
+postcombinexp1OzSquarePseudoEEMD <- postEEMD(c(combinexp1Oz[,"OzSquarePseudo"]), c(combinexp1Oz[,"msec"]))
+
+postcombinexp2OzSquarePseudoEEMD <- postEEMD(c(combinexp2Oz[,"OzSquarePseudo"]), c(combinexp2Oz[,"msec"]))
+
+postcombinexp1OzDiamondMaskEEMD <- postEEMD(c(combinexp1Oz[,"OzDiamondMask"]), c(combinexp1Oz[,"msec"]))
+
+postcombinexp2OzDiamondMaskEEMD <- postEEMD(c(combinexp2Oz[,"OzDiamondMask"]), c(combinexp2Oz[,"msec"]))
+
+postcombinexp1OzDiamondPseudoEEMD <- postEEMD(c(combinexp1Oz[,"OzDiamondPseudo"]), c(combinexp1Oz[,"msec"]))
+
+postcombinexp2OzDiamondPseudoEEMD <- postEEMD(c(combinexp2Oz[,"OzDiamondPseudo"]), c(combinexp2Oz[,"msec"]))
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,34 @@
+
+hhtpostEEMDexp1Ozsqua <- hilbertspec(postexper1Ozsquaemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDexp2Ozsqua <- hilbertspec(postexper2Ozsquaemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDexp1Ozdiamo <- hilbertspec(postexper1Ozdiamoemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDexp2Ozdiamo <- hilbertspec(postexper2Ozdiamoemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDexp1OzMask <- hilbertspec(postexper1OzMaskemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDexp2OzMask <- hilbertspec(postexper2OzMaskemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDexp1OzPseudomask <- hilbertspec(postexper1OzPseudomaskemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDexp2OzPseudomask <- hilbertspec(postexper2OzPseudomaskemdtryimfwave$postmode[,2:8])
+
+hhtpostEEMDcombinexp1OzSquareMask <- hilbertspec(postcombinexp1OzSquareMaskEEMD$postmode[,2:8])
+
+hhtpostEEMDcombinexp2OzSquareMask <- hilbertspec(postcombinexp2OzSquareMaskEEMD$postmode[,2:8])
+
+hhtpostEEMDcombinexp1OzSquarePseudo <- hilbertspec(postcombinexp1OzSquarePseudoEEMD$postmode[,2:8])
+
+hhtpostEEMDcombinexp2OzSquarePseudo <- hilbertspec(postcombinexp2OzSquarePseudoEEMD$postmode[,2:8])
+
+hhtpostEEMDcombinexp1OzDiamondMask <- hilbertspec(postcombinexp1OzDiamondMaskEEMD$postmode[,2:8])
+
+hhtpostEEMDcombinexp2OzDiamondMask <- hilbertspec(postcombinexp2OzDiamondMaskEEMD$postmode[,2:8])
+
+hhtpostEEMDcombinexp1OzDiamondPseudo <- hilbertspec(postcombinexp1OzDiamondPseudoEEMD$postmode[,2:8])
+
+hhtpostEEMDcombinexp2OzDiamondPseudo <- hilbertspec(postcombinexp2OzDiamondPseudoEEMD$postmode[,2:8])
+
+

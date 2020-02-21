@@ -1,0 +1,17 @@
+vif_func(colli_AmpostEEMDOz)
+All variables have VIF < 10, max VIF 8.83
+
+
+vif_func(colli_AmpostEEMDT5)
+All variables have VIF < 10, max VIF 9.06
+
+
+vif_func(colli_HzpostEEMDOz)
+All variables have VIF < 10, max VIF 7.02
+
+
+vif_func(colli_HzpostEEMDT5)
+All variables have VIF < 10, max VIF 8.47
+
+
+
