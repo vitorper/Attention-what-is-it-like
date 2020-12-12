@@ -1,0 +1,837 @@
+Xie, G., Guo, Y., Tong, S., and Ma, L. (2014). Calculate excess mortality during heatwaves using Hilbert-Huang transform algorithm. BMC medical research methodology, 14, 35.
+
+
+
+
+
+#################################################################################
+# 12/12/2012
+# The following R programs are prepared by Gang Xie  (John Xie) at
+# Queensland University of Technology, Brisbane, Australia,
+# for implementation of Hilbert-Huang Transform (HHT) algorithm.
+# 
+# These R programs should only be used free of charge for the non-profit purposes 
+# such as  academic study and research.  
+# Disclaimer: No liability is accepted by the author 
+# (or any affiliated organisation) for any loss or damage 
+# that may be caused by using this software.
+#################################################################################
+#
+#
+# These are a group of special R functions for time series data analysis 
+# using HHT algorithm originally introduced by Norden E. Huang, et. al. 
+# A large part of the R code contained in this file are the realisation of 
+# the Matlab functions written  by Zhaohua Wu and these Matlab programs are free available
+# from the website http://rcada.ncu.edu.tw/.
+# Details are as follows.
+# EEMDR: is essentially a R realisation of Matlab program 'eemd'; the major difference between
+#        EEMDR and eemd is in its subroutine function 'extrema'.  In EEMDR, the function 'extrema'
+#        is a copy of the 'extrema' function from the R package 'EMD' authored by
+#        Donghoh Kim and Hee-Seok Oh.  Depending on  specification of the input arguments, 
+#        users can decompose the input time series by EMD procedure or EEMD procedure.
+#        EEMDR gives both the numeric output and graphic output of the generated IMFs.
+# EEMDR1: is a simplified version of EEMDR function.  EEMDR1 acts as a subroutine function
+#        to be called by function 'postEEMD'.  EEMDR1 generates the post processed IMFs
+#        from EEMD procedure.  Details of post processing treatment on EEMD can be found 
+#        in reference [4].
+# postEEMD: a function which generates the post processed IMFs.  There is no counterpart
+#        Matlab function.
+# ifndqR: This is a function to calculate instantaneous frequency based on HHT algorithm,i.e.
+#        a translation of the Matlab code function 'ifndq' written by Zhaohua Wu  (zwu@fsu.edu).
+# testimf: This is a significance test function based on the average energy of IMFs to distinguish 
+#        those  trend IMFs from the "random" (i.e. non-trend) IMFs.  This function is of our
+#        original work by implementing the theoretic results given in [6].  Wu also 
+#        provided a significance test function, 'significance' (need to call a subroutine function
+#        'dist_value'),  in Matlab code.  Based on our experience, we observed that our approach
+#        can achieve the same test result but our test function is simpler in programming.
+#        More importantly, the theoretic results given in [6] imply that our approach is applicable
+#        in  more general case than identifying white noise non-trend IMFs.  
+# 
+#----------------------------------------------------------------------------------
+# This is a utitlity program (i.e. subroutine function)  being called by 'EEMDR' or 'EEMDR1'.
+# This function, extrema, returns the positions of extrema (minima or maxima points) and
+# the number of extrema of a time series sample data.
+# This program is copied from R package 'EMD' authored by Donghoh Kim and Hee-Seok Oh 
+# (published on 29/10/2012)..
+#
+# INPUT:
+#        y:  An input time series from which the positions of extrema will be determined
+#       
+# OUPUT:
+#        minindex:  positions or index of the minima points.
+#        maxindex:  positions or index of the maxima points.
+#        nextreme:  number of extrema.
+#
+
+
+ extrema <- function (y, ndata = length(y), ndatam1 = ndata - 1) 
+{
+    minindex <- maxindex <- NULL
+    nextreme <- 0
+    cross <- NULL
+    ncross <- 0
+    z1 <- sign(diff(y))
+    index1 <- seq(1, ndatam1)[z1 != 0]
+    z1 <- z1[z1 != 0]
+    if (!(is.null(index1) || all(z1 == 1) || all(z1 == -1))) {
+        index1 <- index1[c(z1[-length(z1)] != z1[-1], FALSE)] + 
+            1
+        z1 <- z1[c(z1[-length(z1)] != z1[-1], FALSE)]
+        nextreme <- length(index1)
+        if (nextreme >= 2) 
+            for (i in 1:(nextreme - 1)) {
+                tmpindex <- index1[i]:(index1[i + 1] - 1)
+                if (z1[i] > 0) {
+                  tmpindex <- tmpindex[y[index1[i]] == y[tmpindex]]
+                  maxindex <- rbind(maxindex, c(min(tmpindex), 
+                    max(tmpindex)))
+                }
+                else {
+                  tmpindex <- tmpindex[y[index1[i]] == y[tmpindex]]
+                  minindex <- rbind(minindex, c(min(tmpindex), 
+                    max(tmpindex)))
+                }
+            }
+        tmpindex <- index1[nextreme]:ndatam1
+        if (z1[nextreme] > 0) {
+            tmpindex <- tmpindex[y[index1[nextreme]] == y[tmpindex]]
+            maxindex <- rbind(maxindex, c(min(tmpindex), max(tmpindex)))
+        }
+        else {
+            tmpindex <- tmpindex[y[index1[nextreme]] == y[tmpindex]]
+            minindex <- rbind(minindex, c(min(tmpindex), max(tmpindex)))
+        }
+        if (!(all(sign(y) >= 0) || all(sign(y) <= 0) || all(sign(y) == 
+            0))) {
+            index1 <- c(1, index1)
+            for (i in 1:nextreme) {
+                if (y[index1[i]] == 0) {
+                  tmp <- c(index1[i]:index1[i + 1])[y[index1[i]:index1[i + 
+                    1]] == 0]
+                  cross <- rbind(cross, c(min(tmp), max(tmp)))
+                }
+                else if (y[index1[i]] * y[index1[i + 1]] < 0) {
+                  tmp <- min(c(index1[i]:index1[i + 1])[y[index1[i]] * 
+                    y[index1[i]:index1[i + 1]] <= 0])
+                  if (y[tmp] == 0) {
+                    tmp <- c(tmp:index1[i + 1])[y[tmp:index1[i + 
+                      1]] == 0]
+                    cross <- rbind(cross, c(min(tmp), max(tmp)))
+                  }
+                  else cross <- rbind(cross, c(tmp - 1, tmp))
+                }
+            }
+            if (any(y[index1[nextreme + 1]] * y[index1[nextreme + 
+                1]:ndata] <= 0)) {
+                tmp <- min(c(index1[nextreme + 1]:ndata)[y[index1[nextreme + 
+                  1]] * y[index1[nextreme + 1]:ndata] <= 0])
+                if (y[tmp] == 0) {
+                  tmp <- c(tmp:ndata)[y[tmp:ndata] == 0]
+                  cross <- rbind(cross, c(min(tmp), max(tmp)))
+                }
+                else cross <- rbind(cross, c(tmp - 1, tmp))
+            }
+            ncross <- nrow(cross)
+        }
+    }
+    list(minindex = minindex, maxindex = maxindex, nextreme = nextreme, 
+        cross = cross, ncross = ncross)
+}
+
+# end of the function 'extrema'.
+
+#----------------------------------------------------------------------------------
+# This is an EMD/EEMD program.  The R code is prepared according to Matlab code 
+# in http://rcada.ncu.edu.tw/eemd.m.  There are changes in this R code program.
+# (1) end effects of EMD are treated according to the PPT document 'End Effects of EMD
+# An unsolved, and perhaps, unsolvable problem' presented in  http://rcada.ncu.edu.tw
+# website; (2) this R code EMD/EEMD program needs to call a function named 'extrema'
+# which returns the minimum and maximum information of an input time sereies.  The
+# 'extrema' R function is given in the R package 'EMD'; (3) the spline function used in 
+# this R EMD/EEMD program is 'splinefun' (R 'base' package) with which the user may specify
+# different spline method.  As research shows and with our limited experience, we recommend
+# either the 'fmm' method (default method here) or the 'natural' method (details may 
+# see the decription to 'splinefun' function in R help manual. (4) The stopping rule applied 
+# in this R EMD/EEMD program is fixing the number of iterations (of the sifting process) to be 10, 
+# given the optimal objective is to make sure that all the generated intrinsic mode functions
+# (imf) meet the definition criteria (i.e. (a) The number of local extrema of the time
+# series and the number of its zero-crossings must either be equal or differ by at most one.
+# (b) At any time, the mean value of the upper envelope determined by the local maxima and the
+# lower envelope determined by the local minima is zero). 
+# Justification of using this fixed number of iterations stopping rule can be found in reference [5].
+
+# INPUT:
+# inputd: input data, a time series
+# Nstd: ratio of the standard deviation of the added noise and that of inputd
+# NE: Ensemble number for the EEMDR.
+# method: cubic spline method chosen for construction of envelopes
+# graphoutput: a logic variable, default vaule 1 gives an on-screen graphic output of the decomposed IMFs;
+#              other values will  export a document named "emdIMFs.pdf".
+# viewdiff: a logic variable, default value 0 will NOT output the information of differences of number of
+#           extrema and the number of zero crossing.  Otherwise, the information will show on screen.
+#
+# Note: When Nst is set to zero and NE is set to 1, the program degenerateds to a EMD program
+#
+# OUTPUT:
+# (1) the numeric output is a n by (NM+1) dimension data frame, where n = length(input time series)
+# and NM = number of imfs.  The first column of the data frame contains the input time series.
+# Column 2 to column (NM + 1) are the imfs.  Note that the last imf series is the residual series.
+# Therefore, the values in column 1 can be recovered by summing up  the corresponding elements in 
+# column 2 to column (NM + 1).
+# (2)  a graphic output which produce the corresponding time series plots of the numeric output.
+# 
+
+#--------------------------------------------------
+
+
+
+   EEMDR <- function(inputd, Nstd=0, NE=1, method="fmm",
+                graphoutput=1, viewdiff = 0) {
+
+# 
+
+ if(Nstd > 0.3) cat("Warning: Nstd value is recommended to be between 0.05 to 0.2. /n")
+ if(NE > 200) cat("Warning: it is recommended for NE to be between 50 to 200. /n")
+
+ if(Nstd == 0 && NE == 1) cat("This program is performing an EMD operation.  \n\n")
+      else cat("This program is performing an EEMD operation.  \n\n")
+
+  YY = inputd
+  nn =  length(YY); tyr = 1:nn
+  dd = 1:nn
+  Ystd = sd(YY); YY = YY/Ystd
+
+ TNM = trunc(log(nn)/log(2)) - 1
+ TNM2 = TNM + 2
+
+#----------
+
+ Amode = allmode = matrix(rep(0,nn*TNM2), nrow=nn,ncol=TNM2)
+
+#--------
+
+ for(ni in 1:NE)  {
+
+  X1 = YY + rnorm(nn,0,Nstd)
+
+ Amode[,1] = YY
+
+ yorigin = X1
+ yend = yorigin
+
+ nmode = 1
+ k = 1 
+
+#--------
+
+ while (nmode <= TNM)  {
+
+           ystart = yend
+
+ y.extre = extrema(ystart)
+
+ xminp = tyr[y.extre$mini[,1]];  xmaxp = tyr[y.extre$maxi[,1]]
+
+ ncros = y.extre$ncross
+ ndiff = length(xminp) + length(xmaxp) - ncros
+
+               
+#-------
+# Apply the fixed number of iterations (iteration  =10) stopage rule.
+# Details see "Ensemble empirical mode decomposition:
+##   a noise-assisted data analysis method" (2009), appendix A1.
+# 
+# Reference: page 4, "A review on Hilbert-Huang Transform: method and its applications to 
+# Geophysical studies", by Norden E. Huang and Zhaohua Wu, (2008)
+#
+
+             iter = 1
+   
+      while ( iter < 10)         
+        
+
+#   
+
+          {
+  if ((length(xminp)+length(xmaxp)) < 2) 
+      {  k = k+1;  break}
+
+ xminp = sort(xminp)
+ xmaxp = sort(xmaxp)
+                           
+ ymin = ystart[xminp];  ymax = ystart[xmaxp]
+
+# end points treatment
+  ny1 <- length(ymin); ny2 <- length(ymax)
+  ny <- min(ny1, ny2)
+ if(ny >= 2)  {
+   mxy = (ymin[2] - ymin[1])/(xminp[2] - xminp[1])
+   cxy = ymin[1]- mxy*xminp[1]
+   ymin1 = mxy*tyr[1] + cxy
+   ymin1 = ifelse(ystart[1] <= ymin1, ystart[1], (ymin1+ystart[1])/2)
+
+   mxy = (ymin[(ny1-1)] - ymin[ny1])/(xminp[(ny1-1)] - xminp[ny1])
+   cxy = ymin[ny1]- mxy*xminp[ny1]
+   yminn = mxy*tyr[nn] + cxy
+   yminn = ifelse(ystart[nn] <= yminn, ystart[nn], (yminn+ystart[nn])/2)
+
+   mxy = (ymax[2] - ymax[1])/(xmaxp[2] - xmaxp[1])
+   cxy = ymax[1]- mxy*xmaxp[1]
+   ymax1 = mxy*tyr[1] + cxy
+   ymax1 = ifelse(ystart[1] >= ymax1, ystart[1], (ymax1+ystart[1])/2)
+
+   mxy = (ymax[(ny2-1)] - ymax[ny2])/(xmaxp[(ny2-1)] - xmaxp[ny2])
+   cxy = ymax[ny2]- mxy*xmaxp[ny2]
+   ymaxn = mxy*tyr[nn] + cxy
+   ymaxn = ifelse(ystart[nn] >= ymaxn, ystart[nn], (ymaxn+ystart[nn])/2)
+
+   dmin.f <- splinefun(c(tyr[1],xminp,tyr[nn]),c(ymin1,ymin,yminn), method=method)
+   dmax.f <- splinefun(c(tyr[1],xmaxp,tyr[nn]), c(ymax1,ymax,ymaxn), method=method)
+                      }  # end of 'if(ny >= 2) '
+
+#---------------
+  else{
+   dmin.f <- splinefun(xminp,ymin, method=method)
+
+   dmax.f <- splinefun(xmaxp, ymax, method=method)}
+ 
+# 
+  ylower = dmin.f(tyr)
+
+ 
+# 
+
+  yupper = dmax.f(tyr)
+
+
+     meanUL = (ylower + yupper) / 2
+     ystart = ystart - meanUL
+
+ y.extre = extrema(ystart)
+
+ xminp = tyr[y.extre$mini[,1]];  xmaxp = tyr[y.extre$maxi[,1]]
+
+ ncros = y.extre$ncross
+ ndiff = length(xminp) + length(xmaxp) - ncros
+  
+          iter = iter + 1 
+
+
+#      
+
+                 }   # end of 'while ( )'
+          
+         yend = yend - ystart
+     
+              nmode = nmode + 1
+                
+       Amode[,nmode] = ystart
+       Amode[,(nmode+1)] = yend
+
+#----------------            
+ k = k+1
+ stp = sum(yend - 0)
+  if(stp == 0)  break  
+#--------------
+
+           }   # end of 'while (nmode <= TNM)'
+
+      allmode = allmode + Amode
+                  } # end of 'for(ni in 1:NE)'
+
+             allmode = allmode / NE
+             allmode = allmode * Ystd
+ if(k < TNM2) {
+          for(i in (k+1):TNM2) 
+             {allmode[,k] = allmode[,k] + allmode[,i]
+                     allmode[,i] = 0 } }
+ 
+# 
+ if(graphoutput != 1) pdf(file="emdIMFs.pdf")
+
+ op <- par(mfrow=c(k,1),mar=c(0.2,0.5,1,1),mgp=c(0.5,0.2,0))
+   a = "imf"; qp = c(0,0.2,0.4,0.6,0.8,1); atw = as.numeric(quantile(1:nn, qp))
+    for(i in 1:k)  {
+   if(i ==1) {
+ plot(allmode[,1], xlab=" ", ylab=" ",type="l",yaxt ="n", xaxt="n" ,
+      main = "Raw time series data", cex.main=0.9,lwd=2)
+  axis(1, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(2, at=0, labels= "", tck = -0.1, tcl =0.3)
+  axis(3, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(4, at=0, labels= "", tck = -0.1, tcl =0.3)
+                         }
+
+   if( i >1 && i < k)  {
+ plot(allmode[,i], xlab=" ", ylab=" ",type="l",yaxt ="n", xaxt="n" )
+  axis(1, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(2, at=0, labels= "", tck = -0.1, tcl =0.3)
+  axis(3, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(4, at=0, labels= "", tck = -0.1, tcl =0.3)
+  title(paste(a,(i-1),sep=" "), cex.main=0.9)  }
+
+    if(i == k) {
+ plot(allmode[,k], xlab=" ", ylab=" ",type="l",yaxt ="n", xaxt="n",
+  main= "Residual series", cex.main=0.9 )
+  axis(1, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(2, at=0, labels= "", tck = -0.1, tcl =0.3)
+  axis(3, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(4, at=0, labels= "", tck = -0.1, tcl =0.3)
+                      }
+                            
+  }  # end of 'for(i in 1:k)'
+ 
+ par(op)  
+
+ if(graphoutput != 1) dev.off()
+
+# 
+#-------
+# 
+          modes = allmode[,2:k]
+       extremaDiff <- NULL
+    for(i in 1:(k-1)) {
+                  midext = extrema(modes[,i])
+  mminx = tyr[midext$mini[,1]];  mmaxx = tyr[midext$maxi[,1]]
+
+ ncos = midext$ncross
+ ndif = length(mminx) + length(mmaxx) - ncos
+      extremaDiff = c(extremaDiff,ndif) }
+
+  if(viewdiff != 0) {
+    cat("Difference between # of extrema and ncross: \n")
+    for(j in 1:(k-1)) cat(extremaDiff[j], "\n") }
+#                   
+#--------- 
+ 
+         invisible(list(allmode = allmode))
+
+                              }  # end of the function 'EEMDR'
+
+# Examples:
+# yt= gsta.df[,2]
+# imf.df = EEMDR(yt) 
+# imf.df = EEMDR(yt,0.1,100) 
+
+#------------------------------------------------------------
+# 
+# a simplified version of EEMDR for the purpose of calculating the posterior EEMD
+# IMFs.
+#
+
+  EEMDR1 <- function(inputd,  method="fmm", viewdiff = 0) {
+
+# 
+
+ 
+
+  YY = inputd
+  nn =  length(YY); tyr = 1:nn
+  dd = 1:nn
+  Ystd = sd(YY); YY = YY/Ystd
+
+ TNM = trunc(log(nn)/log(2)) - 1
+ TNM2 = TNM + 2
+
+#----------
+
+ Amode = matrix(rep(0,nn*TNM2), nrow=nn,ncol=TNM2)
+
+#--------
+
+
+ Amode[,1] = YY
+
+ yorigin = YY
+ yend = yorigin
+
+ nmode = 1
+ k = 1 
+
+#--------
+
+ while (nmode <= TNM)  {
+
+           ystart = yend
+
+ y.extre = extrema(ystart)
+
+ xminp = tyr[y.extre$mini[,1]];  xmaxp = tyr[y.extre$maxi[,1]]
+
+ ncros = y.extre$ncross
+ ndiff = length(xminp) + length(xmaxp) - ncros
+
+               
+#-------
+## Apply the fixed number of iterations (iteration  =10) stoppage rule.
+# Details see "Ensemble empirical mode decomposition:
+##   a noise-assisted data analysis method" (2009), appendix A1.
+
+             iter = 1
+  
+      while ( iter < 10)         
+         
+
+          {
+  if ((length(xminp)+length(xmaxp)) < 2) 
+      {  k = k+1;  break}
+
+ xminp = sort(xminp)
+ xmaxp = sort(xmaxp)
+                           
+ ymin = ystart[xminp];  ymax = ystart[xmaxp]
+
+# end points treatment
+  ny1 <- length(ymin); ny2 <- length(ymax)
+  ny <- min(ny1, ny2)
+ if(ny >= 2)  {
+   mxy = (ymin[2] - ymin[1])/(xminp[2] - xminp[1])
+   cxy = ymin[1]- mxy*xminp[1]
+   ymin1 = mxy*tyr[1] + cxy
+   ymin1 = ifelse(ystart[1] <= ymin1, ystart[1], (ymin1+ystart[1])/2)
+
+   mxy = (ymin[(ny1-1)] - ymin[ny1])/(xminp[(ny1-1)] - xminp[ny1])
+   cxy = ymin[ny1]- mxy*xminp[ny1]
+   yminn = mxy*tyr[nn] + cxy
+   yminn = ifelse(ystart[nn] <= yminn, ystart[nn], (yminn+ystart[nn])/2)
+
+   mxy = (ymax[2] - ymax[1])/(xmaxp[2] - xmaxp[1])
+   cxy = ymax[1]- mxy*xmaxp[1]
+   ymax1 = mxy*tyr[1] + cxy
+   ymax1 = ifelse(ystart[1] >= ymax1, ystart[1], (ymax1+ystart[1])/2)
+
+   mxy = (ymax[(ny2-1)] - ymax[ny2])/(xmaxp[(ny2-1)] - xmaxp[ny2])
+   cxy = ymax[ny2]- mxy*xmaxp[ny2]
+   ymaxn = mxy*tyr[nn] + cxy
+   ymaxn = ifelse(ystart[nn] >= ymaxn, ystart[nn], (ymaxn+ystart[nn])/2)
+
+   dmin.f <- splinefun(c(tyr[1],xminp,tyr[nn]),c(ymin1,ymin,yminn), method=method)
+   dmax.f <- splinefun(c(tyr[1],xmaxp,tyr[nn]), c(ymax1,ymax,ymaxn), method=method)
+                      }  # end of 'if(ny >= 2) '
+
+#---------------
+  else{
+   dmin.f <- splinefun(xminp,ymin, method=method)
+
+   dmax.f <- splinefun(xmaxp, ymax, method=method)}
+ 
+#
+
+  ylower = dmin.f(tyr)
+
+ 
+# 
+
+  yupper = dmax.f(tyr)
+
+
+     meanUL = (ylower + yupper) / 2
+     ystart = ystart - meanUL
+
+ y.extre = extrema(ystart)
+
+ xminp = tyr[y.extre$mini[,1]];  xmaxp = tyr[y.extre$maxi[,1]]
+
+ ncros = y.extre$ncross
+ ndiff = length(xminp) + length(xmaxp) - ncros
+  
+          iter = iter + 1 
+#       
+
+                 }   # end of 'while ( )'
+          
+         yend = yend - ystart
+     
+              nmode = nmode + 1
+                
+       Amode[,nmode] = ystart
+       Amode[,(nmode+1)] = yend
+
+#----------------            
+ k = k+1
+ stp = sum(yend - 0)
+  if(stp == 0)  break  
+#--------------
+
+           }   # end of 'while (nmode <= TNM)'
+
+                 
+
+ if(k < TNM2) {
+          for(i in (k+1):TNM2) 
+             {Amode[,k] = Amode[,k] + Amode[,i]
+                     Amode[,i] = 0 } }
+ 
+          Amode = Amode * Ystd
+#-------
+# 
+          modes = Amode[,2:k]
+       extremaDiff <- NULL
+    for(i in 1:(k-1)) {
+                  midext = extrema(modes[,i])
+  mminx = tyr[midext$mini[,1]];  mmaxx = tyr[midext$maxi[,1]]
+
+ ncos = midext$ncross
+ ndif = length(mminx) + length(mmaxx) - ncos
+      extremaDiff = c(extremaDiff,ndif) }
+
+ if(viewdiff !=0) {
+    cat("Difference between # of extrema and ncross: \n")
+    for(j in 1:(k-1)) cat(extremaDiff[j], "\n") }
+#                   
+#--------- 
+ 
+ 
+         return(Amode)
+
+                              }  # end of the function 'EEMDR1'
+
+#------------------------------------------------------------
+# 
+# a posterior EEMD function to make sure EEMD results are true IMFs.
+#
+# For Ensemble Empirical Mode Decomposition (EEMD),  
+#  details see "Ensemble empirical mode decomposition:
+##   a noise-assisted data analysis method" (2009), by Zhaohua Wu and Norden E. Huang.
+
+
+  postEEMD <- function(inputd, Nstd=0, NE=1, graphoutput =1, viewdiff=0) 
+                          {
+
+   out.df <- EEMDR(inputd=inputd, Nstd=Nstd, NE = NE) 
+
+   nc = dim(out.df$allmode)[2]  # find the number of columns
+
+   nx = length(out.df$allmode[,1])
+
+    postmode = matrix(rep(0,nc*nx),ncol=nc)
+
+   postmode[,1] = out.df$allmode[,1]
+
+  if(nc < 4) stop("The number of columns needs to be greater than 3. /n")
+
+    for(i in 2:(nc-2)) {
+        if(i ==2)  midc = out.df$allmode[,i] + out.df$allmode[,(i+1)]
+        midmode = EEMDR1(midc)
+        postmode[,i] = midmode[,2]
+        residc = rep(0,nx); nd = dim(midmode)[2]
+      for(j in 3:nd) residc = residc + midmode[,j]
+         midc = residc + out.df$allmode[,(i+2)]
+
+        if(i == (nc-2)) {
+            midmode = EEMDR1(midc, viewdiff=viewdiff)
+        postmode[,(i+1)] = midmode[,2]
+        residc = rep(0,nx); nd = dim(midmode)[2]
+      for(j in 3:nd) residc = residc + midmode[,j]
+           postmode[,(i+2)] = residc
+                       }   # end of 'if(i == (nc-2))'
+
+                           }  # end of 'for(i in 2:(nc-2))'
+
+ if(graphoutput != 1) pdf(file="postIMFs.pdf")
+
+        k = nc
+ op <- par(mfrow=c(k,1),mar=c(0.2,0.5,1,1),mgp=c(0.5,0.2,0))
+   a = "post-imf"; qp = c(0,0.2,0.4,0.6,0.8,1); atw = as.numeric(quantile(1:nx, qp))
+    for(i in 1:k)  {
+   if(i ==1) {
+ plot(postmode[,1], xlab=" ", ylab=" ",type="l",yaxt ="n", xaxt="n" ,
+      main = "Raw time series data", cex.main=0.9, lwd=2)
+  axis(1, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(2, at=0, labels= "", tck = -0.1, tcl =0.3)
+  axis(3, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(4, at=0, labels= "", tck = -0.1, tcl =0.3)
+                         }
+
+   if( i >1 && i < k)  {
+ plot(postmode[,i], xlab=" ", ylab=" ",type="l",yaxt ="n", xaxt="n" )
+  axis(1, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(2, at=0, labels= "", tck = -0.1, tcl =0.3)
+  axis(3, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(4, at=0, labels= "", tck = -0.1, tcl =0.3)
+  title(paste(a,(i-1),sep=" "), cex.main=0.9)  }
+
+    if(i == k) {
+ plot(postmode[,k], xlab=" ", ylab=" ",type="l",yaxt ="n", xaxt="n",
+  main= "Residual series", cex.main=0.9 )
+  axis(1, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(2, at=0, labels= "", tck = -0.1, tcl =0.3)
+  axis(3, at=atw, labels= rep("", 6), tck = -0.1, tcl =0.2)
+  axis(4, at=0, labels= "", tck = -0.1, tcl =0.3)
+                      }
+                            
+                        }  # end of 'for(i in 1:k)'
+ 
+   par(op)  
+ 
+if(graphoutput != 1) dev.off()
+ 
+         invisible(list(postmode = postmode))
+
+                              }  # end of the function 'postEEMD'
+
+#
+# Example:
+# postEEMD(yt,0.1,50)
+
+                       
+
+#---------------------------------------------------------------------------
+#
+# 
+#
+# This is a function to calculate instantaneous frequency based on HHT algorithm
+# according to Matlab code of function 'ifndq' written by Zhaohua Wu  (zwu@fsu.edu).
+#
+# INPUT: vimf: an IMF;
+#        dt:   time interval of the inputted data.  e.g. if vimf is a monthly data,
+#               dt = 1 implies the output omega will be in cycle per month; if, instead,
+#               dt = 1/12 implies the output omega will be measured in cycle per year, etc.  
+# OUTPUT: omega: instantaneous frequency, which is 2*pi/T, where T is hte period of an ascillation.
+#        
+
+     ifndqR <- function(vimf, dt, method="fmm") {
+
+           Nnormal  = 5
+           rangetop = 0.9
+           
+           vlength = length(vimf)
+           vlength1 = vlength - 1
+
+     abs_vimf = numeric(vlength)
+ for(i in 1:vlength)   abs_vimf[i] = ifelse(vimf[i] >= 0 , vimf[i], -vimf[i])
+
+#--------- 
+# Apply the normalized Hibert Transform procedure.
+# Reference: page 6, "A review on Hilbert-Huang Transform: method and its applications to 
+# Geophysical studies", by Norden E. Huang and Zhaohua Wu, (2008)
+
+
+
+    tyr = 1:vlength
+    for (j in 1:Nnormal) {
+
+           y.extre = extrema(abs_vimf)
+
+       xmaxp = tyr[y.extre$maxi[,1]]
+       xmaxp = sort(xmaxp)
+       ymax = abs_vimf[xmaxp]
+       dmax.f <- splinefun(xmaxp,ymax,method=method)
+       yupper = dmax.f(tyr)
+            abs_vimf = abs_vimf / yupper
+                                }  # end of 'for (j in 1:Nnormal)'
+#
+
+ nvimf = numeric(vlength)
+ for(i in 1:vlength)   nvimf[i] = ifelse(vimf[i] >= 0 , abs_vimf[i], -abs_vimf[i])
+
+
+#--------
+ omgcos = rep(-9999, vlength)
+ rangebot = -rangetop
+   for(i in 2:vlength1)  {
+       if(nvimf[i] > rangebot && nvimf[i] < rangetop)
+     { omgcos[i] = abs(nvimf[i+1] - nvimf[i-1]) * 0.5/
+             sqrt(1- nvimf[i]*nvimf[i]) }
+                           }
+
+ ddd = temp = NULL
+ for(i in 1:vlength) {
+              if(omgcos[i] > -1000)
+                 { ddd = c(ddd, i)
+                  temp = c(temp, omgcos[i]) }
+                            }
+ 
+  temp.f <- splinefun(ddd,temp,method=method)
+       omega = temp.f(tyr)
+                                 
+    pi2 = 2*pi
+  omega = omega/dt/pi2
+    invisible(list(omega = omega))
+
+
+                          }  # end of function 'ifndqR' 
+
+
+#
+
+ 
+#------------------------------------------------------
+# 
+# An alternative hypothesis testing algorithm to distringuish the trend components from
+# the "white noise" / random components.
+# This significance test function is different from the Matlab function 'significance'
+# written by Zhaohua Wu.  All the formulas are derived from the research results presented
+# in reference [6]. This is our original research work.
+
+# This is a function based on the average energy of IMFs to distinguish those 
+# trend IMFs from the "random" IMFs.
+# inputimfs: a matrix which contains all IMFs generated from the application of the function EEMDR 
+# or function postEEMD. 
+# This function returns a significance test plot with approximate 95% and 99% confidence band lines.
+#
+ 
+ testimf <- function(inputimfs, nfit = 3, wnoise=1) {
+
+         sizeM = dim(inputimfs)
+        nx = sizeM[1]; nc = sizeM[2]
+         mse1 = sum(inputimfs[,1]^2)/nx
+         ek = NULL
+        for(i in 1:nc) ek <- c(ek, mse1*2.01^(-i)/0.719)
+#         ek = c(mse1, ek[-1])
+        logek = log(ek)/log(2)
+
+       up95 = logek + 2^(0.474*(1:nc)-2.449)
+       up99 = logek + 2^(0.460*(1:nc)-1.919)
+
+   sampek = NULL
+    for(i in 1:nc) sampek <- c(sampek, sum(inputimfs[,i]^2)/nx)
+    logeek = log(sampek)/log(2)
+
+    yy =c(logek, logeek)
+   plot(1:nc, logek, ylim=c(min(yy), max(yy)*1.1),xlab="IMF index", 
+           ylab= expression(log[2](energy)))
+   lines(1:nc,logek)
+ 
+   points(1:nc, logeek, pch=8, cex=1.2)
+   lines(1:nc,logeek)
+
+   if(wnoise == 1) {
+   lines(1:nc, up95, lty=3)
+   lines(1:nc, up99, lty=2) }
+   else{
+   yc = logeek[1:nfit]; xc = 1:nfit
+   lmc = lm(yc~xc)
+   abline(lmc)
+   logek1 = as.numeric(lmc$coef[2])*(1:nc) + as.numeric(lmc$coef[1])
+    up95a = logek1 + 2^(0.474*(1:nc)-2.449)
+    up99a = logek1 + 2^(0.460*(1:nc)-1.919)
+    lines(1:nc, up95a, lty=3)
+    lines(1:nc, up99a, lty=2)  }
+
+                            }  # end of the function
+
+
+# Examples: 
+# imf.dd = EEMDR(dailyD)
+#  modes = imf.dd$allmode[,2:10]
+# testimf(modes)
+#---------------------------------------------------------------------------------------------------
+##########################################################################################################
+
+# major references:
+# [1] Norden E. Huang, and et al., The empirical mode decomposition method and the Hilbert spectrum for
+#      non-stationary time series analysis, Proc. Roy. Soc. London 454A (1998) 903 - 995.
+# [2] Zhaohua Wu, and et al., On the trend, detrending, and variability of nonlinear and nonstationary 
+#      time series, Proceedings of the National Academy of Sciences of the USA (PANS), September 18, 2007,
+#      Vol. 104, No. 38, 14889-14894.  
+# [3] Norden E. Huang and Zhaohua Wu, A review on Hilbert-Huang transform: method and its applications
+#      to geophysical studies, Reviews of Geophysics, 46, RG2006, doi:10.1029/2007RG000228, 2008.
+# [4] Zhaohua Wu and Norden E. Huang, Ensemble Empirical Mode Decomposition: A Noise-Assisted Data Analysis
+#      Method, Advances in Adaptive Data Analysis, Vol. 1, No. 1, (2009) 1-41.
+# [5] Gang Wang, Xian-Yao Chen, Fang-li Qiao, Zhaohua Wu, and Norden E. Huang,  On Intrinsic Mode Function, 
+#     Advances in Adaptive Data Analysis, Vol. 2, No. 3, (2010) 277-293.
+# [6] Patrick Flandrin and Gabriel Rilling and Paulo Gongcalves , EMD equivalent filter banks, from interpretation
+#     to applications, in book Hilbert-Huang Transform and Its Applications edited by N.E. Huang and S. Shen(2005). 
+#
+###########################################################################################################
+
