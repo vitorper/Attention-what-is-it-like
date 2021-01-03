@@ -3,4 +3,4 @@ In the first section, empirical mode decomposition (EMD) with post processing (X
 
 In the second section, calculated the variance inflation factor (VIF).
 In the third section, partial least squares regression (PLSR): the minimal root mean squared error of prediction (RMSEP).
-In the last section, partial least squares regression (PLSR): significance multivariate correlation (sMC) statistic.
+In the last section, partial least squares regression (PLSR): significance multivariate correlation (SMC) statistic.
