@@ -10,9 +10,9 @@ postexper1T5squaemdtryimfwave <- postEEMD(c(exper1T5squa[,"T5Square"]), c(exper1
 
 postexper2T5squaemdtryimfwave <- postEEMD(c(exper2T5squa[,"T5Square"]), c(exper2T5squa[,"msec"]))
 
-postexper1T5diamoemdtryimfwave <- postEEMD(c(exper1OZdiamo[,"T5Diamond"]), c(exper1OZdiamo[,"msec"]))
+postexper1T5diamoemdtryimfwave <- postEEMD(c(exper1T5diamo[,"T5Diamond"]), c(exper1T5diamo[,"msec"]))
 
-postexper2T5diamoemdtryimfwave <- postEEMD(c(exper2OZdiamo[,"T5Diamond"]), c(exper2OZdiamo[,"msec"]))
+postexper2T5diamoemdtryimfwave <- postEEMD(c(exper2T5diamo[,"T5Diamond"]), c(exper2T5diamo[,"msec"]))
 
 postexper1T5Maskemdtryimfwave <- postEEMD(c(exper1T5Mask[,"T5Mask"]), c(exper1T5Mask[,"msec"]))
 
